@@ -91,6 +91,9 @@ public class PatientService {
     }
 
     public void deletePatient(UUID patientId) {
+        Patient patient = patientRepo.findById(patientId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + patientId));
 
+        patientRepo.delete(patient);
     }
 }
