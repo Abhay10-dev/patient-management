@@ -1,10 +1,12 @@
 package com.lazycoder.patientservice.service;
 
+import billing.BillingRequest;
 import com.lazycoder.patientservice.dto.PatientRequestDTO;
 import com.lazycoder.patientservice.dto.PatientResponseDTO;
 import com.lazycoder.patientservice.dto.PatientUpdateRequestDTO;
 import com.lazycoder.patientservice.exception.EmailAlreadyExistsException;
 import com.lazycoder.patientservice.exception.ResourceNotFoundException;
+import com.lazycoder.patientservice.grpc.BillingServiceGrpcClient;
 import com.lazycoder.patientservice.mapper.PatientMapper;
 import com.lazycoder.patientservice.model.Patient;
 import com.lazycoder.patientservice.repository.PatientRepo;
@@ -21,10 +23,12 @@ import java.util.UUID;
 public class PatientService {
 
     private final PatientRepo patientRepo;
+    private final BillingServiceGrpcClient  billingServiceGrpcClient;
 
     @Autowired
-    public PatientService(PatientRepo patientRepo) {
+    public PatientService(PatientRepo patientRepo,  BillingServiceGrpcClient billingServiceGrpcClient) {
         this.patientRepo = patientRepo;
+        this.billingServiceGrpcClient = billingServiceGrpcClient;
     }
 
     public List<PatientResponseDTO> getAllPatients() {
@@ -44,6 +48,15 @@ public class PatientService {
 
         // convert patientRequestDTO to Patient entity
         Patient patient = PatientMapper.toEntity(patientRequestDTO);
+
+
+        // Creating Billing Account for the Patient
+        billingServiceGrpcClient.createBilling(BillingRequest.newBuilder()
+                        .setName(patientRequestDTO.getPatientName())
+                        .setEmail(patientRequestDTO.getPatientEmail())
+                        .setAge(patientRequestDTO.getPatientAge())
+                        .setAddress(patientRequestDTO.getPatientAddress())
+                        .build());
 
         // save the patient entity to the database
         patientRepo.save(patient);
@@ -73,6 +86,9 @@ public class PatientService {
         }
         if (dto.getPatientAddress() != null) {
             patient.setPatientAddress(dto.getPatientAddress());
+        }
+        if (dto.getPatientAge() != 0) {
+            patient.setPatientAge(dto.getPatientAge());
         }
         if (dto.getPatientGender() != null) {
             patient.setPatientGender(dto.getPatientGender());

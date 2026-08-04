@@ -2,6 +2,7 @@ package com.lazycoder.patientservice.dto;
 
 import com.lazycoder.patientservice.dto.validation.CreatePatientValidationGroup;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,10 @@ public class PatientRequestDTO {
     @NotBlank(message = "Patient address is required")
     @Size(min = 2, max = 200, message = "Patient address must be between 2 and 200 characters")
     private String patientAddress;
+
+    @NotBlank(message = "Patient age is required")
+    @Min(value = 0, message = "Patient age must be a positive number")
+    private int  patientAge;
 
     @NotBlank(message = "Patient email is required")
     @Email(message = "Patient email is invalid")

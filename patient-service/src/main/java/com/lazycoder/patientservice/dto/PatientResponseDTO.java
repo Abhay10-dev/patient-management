@@ -17,6 +17,8 @@ public class PatientResponseDTO {
 
     private String patientAddress;
 
+    private int patientAge;
+
     private String patientEmail;
 
     private String patientPhone;
