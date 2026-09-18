@@ -13,8 +13,7 @@ public class PatientMapper {
     private PatientMapper() {
         /* This utility class should not be instantiated */
     }
-
-
+    
     public static PatientResponseDTO toDTO(Patient patient) {
         PatientResponseDTO patientResponseDTO = new PatientResponseDTO();
         patientResponseDTO.setPatientId(patient.getPatientId().toString());
