@@ -1,0 +1,41 @@
+# Version Control & CI/CD
+.git
+.gitignore
+.github
+
+# APIs & Config Files
+*.json
+*.http
+
+# Docker Files
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Environment Variables & Secrets
+.env
+*.env
+*.pem
+*.key
+
+# IDE & OS Garbage
+.idea
+.vscode
+*.iml
+*.DS_Store
+Thumbs.db
+
+# Build Outputs & Dependency Caches
+node_modules
+npm-debug.log
+target/
+build/
+.gradle/
+*.class
+*.jar
+
+# Logs, Docs & Test Reports
+*.log
+*.md
+coverage/
+.pytest_cache/
