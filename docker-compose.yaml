@@ -47,17 +47,20 @@ services:
     ports:
       - "4000:4000"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://patient-service-db:5432/{POSTGRES_DB:-patient_service_db}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://patient-service-db:5432/${POSTGRES_DB:-patient_service_db}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       BILLING_SERVICE_ADDRESS: billing-service
       BILLING_SERVICE_PORT: 9001
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       # Disable Spring SQL initialization since PostgreSQL handles it
       SPRING_SQL_INIT_MODE: "never"
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
-      SPRINGDOC_API_DOCS_ENABLED: ${SPRINGDOC_API_DOCS_ENABLED:-true}
-      SPRINGDOC_SWAGGER_UI_ENABLED: ${SPRINGDOC_SWAGGER_UI_ENABLED:-true}
+      # Spring Boot Auto-Mapping Properties
+      SPRINGDOC_API-DOCS_ENABLED: ${SPRINGDOC_API_DOCS_ENABLED:-true}
+      SPRINGDOC_API-DOCS_PATH: "/v3/api-docs"
+      SPRINGDOC_SWAGGER-UI_ENABLED: ${SPRINGDOC_SWAGGER_UI_ENABLED:-true}
+      SPRINGDOC_SWAGGER-UI_PATH: "/swagger-ui.html"
     networks:
       - internal
     depends_on:

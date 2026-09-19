@@ -1,0 +1,22 @@
+# Environment & Secrets
+.env
+*.env
+*.pem
+*.key
+
+# IDEs & System Files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Maven / Gradle Build Directories
+**/target/
+**/build/
+**/.gradle/
+*.class
+*.jar
+
+# Logs
+*.log
