@@ -1,0 +1,12 @@
+# Load your proto file
+proto < C:/Users/Abhaykumar/OneDrive/Desktop/patien-management/billing-service/src/main/proto/billing_service.proto
+
+### Send request to your gRPC server
+GRPC localhost:9001/billing.BillingService/createBillingAccount
+Content-Type: application/json
+
+{
+    "stock_symbol": "NVDA"
+}
+
+###
