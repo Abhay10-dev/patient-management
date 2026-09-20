@@ -1,3 +1,7 @@
+# Ignore SQLTools temporary sessions and local SQL query logs
+*.session.sql
+*.sql.tmp
+
 # Version Control & CI/CD
 .git
 .gitignore
