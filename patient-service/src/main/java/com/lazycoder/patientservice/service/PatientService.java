@@ -7,12 +7,12 @@ import com.lazycoder.patientservice.dto.PatientUpdateRequestDTO;
 import com.lazycoder.patientservice.exception.EmailAlreadyExistsException;
 import com.lazycoder.patientservice.exception.ResourceNotFoundException;
 import com.lazycoder.patientservice.grpc.BillingServiceGrpcClient;
+import com.lazycoder.patientservice.kafka.KafkaProducer;
 import com.lazycoder.patientservice.mapper.PatientMapper;
 import com.lazycoder.patientservice.model.Patient;
 import com.lazycoder.patientservice.repository.PatientRepo;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -24,11 +24,12 @@ public class PatientService {
 
     private final PatientRepo patientRepo;
     private final BillingServiceGrpcClient  billingServiceGrpcClient;
+    private final KafkaProducer kafkaProducer;
 
-    @Autowired
-    public PatientService(PatientRepo patientRepo,  BillingServiceGrpcClient billingServiceGrpcClient) {
+    public PatientService(PatientRepo patientRepo,  BillingServiceGrpcClient billingServiceGrpcClient, KafkaProducer kafkaProducer) {
         this.patientRepo = patientRepo;
         this.billingServiceGrpcClient = billingServiceGrpcClient;
+        this.kafkaProducer = kafkaProducer;
     }
 
     public List<PatientResponseDTO> getAllPatients() {
@@ -49,6 +50,8 @@ public class PatientService {
         // convert patientRequestDTO to Patient entity
         Patient patient = PatientMapper.toEntity(patientRequestDTO);
 
+        // save the patient entity to the database
+        Patient savedPatient = patientRepo.save(patient);
 
         // Creating Billing Account for the Patient
         billingServiceGrpcClient.createBilling(BillingRequest.newBuilder()
@@ -58,11 +61,11 @@ public class PatientService {
                         .setAddress(patientRequestDTO.getPatientAddress())
                         .build());
 
-        // save the patient entity to the database
-        patientRepo.save(patient);
+        // send patient creation event to Kafka
+        kafkaProducer.sendEvent(savedPatient);
 
         // convert Patient entity to patientResponseDTO and return
-        return PatientMapper.toDTO(patient);
+        return PatientMapper.toDTO(savedPatient);
     }
 
     @Transactional

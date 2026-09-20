@@ -54,8 +54,10 @@ services:
     ports:
       - "4000:4000"
     environment:
-      # Kafka configuration
+      # Spring Kafka configuration
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_KAFKA_PRODUCER_KEY_SERIALIZER: org.apache.kafka.common.serialization.StringSerializer
+      SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER: org.apache.kafka.common.serialization.ByteArraySerializer
       # Database configuration
       SPRING_DATASOURCE_URL: jdbc:postgresql://patient-service-db:5432/${POSTGRES_DB:-patient_service_db}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
