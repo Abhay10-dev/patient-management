@@ -54,6 +54,10 @@ services:
     ports:
       - "4000:4000"
     environment:
+      SERVER_PORT: 4000
+      # Actuator config for health endpoint
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health"
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: "never"
       # Spring Kafka configuration
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_KAFKA_PRODUCER_KEY_SERIALIZER: org.apache.kafka.common.serialization.StringSerializer
@@ -76,6 +80,12 @@ services:
       SPRINGDOC_SWAGGER-UI_PATH: "/swagger-ui.html"
     networks:
       - internal
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:4000/actuator/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     depends_on:
       patient-service-db:
         condition: service_healthy
@@ -95,6 +105,32 @@ services:
       - "9001:9001"
     networks:
       - internal
+  
+  analysis-service:
+    build:
+      context: ./analytics-service:latest
+      dockerfile: Dockerfile
+    image: analytics-service:latest
+    container_name: analysis-service
+    ports:
+      - "4002:4002"
+    environment:
+      SERVER_PORT: 4002
+      # Spring Kafka configuration
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_KAFKA_CONSUMER_KEY_DESERIALIZER: org.apache.kafka.common.serialization.StringDeserializer
+      SPRING_KAFKA_CONSUMER_VALUE_DESERIALIZER: org.apache.kafka.common.serialization.ByteArrayDeserializer
+    networks:
+      - internal
+    healthcheck:
+          test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:4002/actuator/health || exit 1"]
+          interval: 10s
+          timeout: 5s
+          retries: 5
+          start_period: 30s
+    depends_on:
+      patient-service:
+        condition: service_healthy
 
 volumes:
   patient-service-db-data:
