@@ -1,4 +1,28 @@
 services:
+  ### API Gateway Service
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    image: api-gateway:latest
+    container_name: api-gateway
+    ports:
+      - "4004:4004"
+    environment:
+      SERVER_PORT: 4004
+      GATEWAY_URL: http://api-gateway:4004
+      PATIENT_SERVICE_URL: http://patient-service:4000
+      BILLING_SERVICE_URL: http://billing-service:4001
+      BILLING_GRPC_URL: grpc://billing-service:9001  # gRPC address inside Docker network
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:4004/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ### Patient Service and its Database
   patient-service-db:
     image: postgres:16-alpine
     container_name: patient-service-db
@@ -20,6 +44,7 @@ services:
       timeout: 5s
       retries: 5
 
+  ### Kafka Service
   kafka:
     image: apache/kafka:latest
     container_name: kafka
@@ -45,16 +70,17 @@ services:
       timeout: 5s
       retries: 5
 
+  ### Patient Service
   patient-service:
     build:
         context: ./patient-service
         dockerfile: Dockerfile
     image: patient-service:latest
     container_name: patient-service
-    ports:
-      - "4000:4000"
     environment:
       SERVER_PORT: 4000
+      # ... your other environment variables ...
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: "TRACE"
       # Actuator config for health endpoint
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health"
       MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: "never"
@@ -74,10 +100,10 @@ services:
       # Disable Spring SQL initialization since PostgreSQL handles it
       SPRING_SQL_INIT_MODE: "never"
       # Springdoc configuration
-      SPRINGDOC_API-DOCS_ENABLED: ${SPRINGDOC_API_DOCS_ENABLED:-true}
-      SPRINGDOC_API-DOCS_PATH: "/v3/api-docs"
-      SPRINGDOC_SWAGGER-UI_ENABLED: ${SPRINGDOC_SWAGGER_UI_ENABLED:-true}
-      SPRINGDOC_SWAGGER-UI_PATH: "/swagger-ui.html"
+      SPRINGDOC_API_DOCS_ENABLED: ${SPRINGDOC_API_DOCS_ENABLED:-true}
+      SPRINGDOC_API_DOCS_PATH: "/v3/api-docs"
+      SPRINGDOC_SWAGGER_UI_ENABLED: ${SPRINGDOC_SWAGGER_UI_ENABLED:-true}
+      SPRINGDOC_SWAGGER_UI_PATH: "/swagger-ui.html"
     networks:
       - internal
     healthcheck:
@@ -94,6 +120,7 @@ services:
       billing-service:
         condition: service_started
 
+  ### Billing Service
   billing-service:
     build:
         context: ./billing-service
@@ -105,10 +132,11 @@ services:
       - "9001:9001"
     networks:
       - internal
-  
+
+  ### Analytics Service
   analysis-service:
     build:
-      context: ./analytics-service:latest
+      context: ./analytics-service
       dockerfile: Dockerfile
     image: analytics-service:latest
     container_name: analysis-service
