@@ -1,0 +1,52 @@
+server:
+  port: ${SERVER_PORT:4004}
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+
+            # Patient Service
+            - id: patient-service-route
+              uri: ${PATIENT_SERVICE_URL:http://patient-service:4000}
+              predicates:
+                - Path=/api/patients,/api/patients/**
+
+            # Billing Service
+            - id: billing-grpc-route
+              uri: ${BILLING_GRPC_URL:grpc://billing-service:9001}
+              predicates:
+                - Path=/billing.BillingService/**
+
+            # Patient Service OpenAPI
+            - id: patient-service-api-docs
+              uri: ${PATIENT_SERVICE_URL:http://patient-service:4000}
+              predicates:
+                - Path=/v3/api-docs/patient-service
+              filters:
+                - RewritePath=/v3/api-docs/patient-service,/v3/api-docs
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: Patient Service
+        url: /v3/api-docs/patient-service
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+
+  endpoint:
+    gateway:
+      access: read-only
+    health:
+      show-details: never
+
